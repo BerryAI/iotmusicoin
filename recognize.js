@@ -221,39 +221,39 @@ function streamingMicRecognize (encoding, sampleRate) {
       sampleRate: sampleRate
     }
   };
-
-
-
+  var lang= new Lang();
   // Create a recognize stream
-  const recognizeStream = speech.createRecognizeStream(request)
-    .on('error', console.error)
-    .on('data', function(data){
-      process.stdout.write(data.results);
-      if (data.results.length > 0) {
-        var transcript = null;
-        if (typeof(data.results) == 'string') {
-          transcript = data.results.trim();
-          transcript = transcript.toLowerCase();
-          var commandCode = lang.commandToCode("en-US", transcript);
-          if (commandCode == -1) {
-            console.log(`Transcript ${transcript} not recognized`);
-          } else {
-            console.log(`Transcript ${transcript} has code => ${commandCode}`);
-            child.send(transcript);
+  function listen(){
+    var recognizeStream = speech.createRecognizeStream(request)
+      .on('error', console.error)
+      .on('data', function(data){
+        process.stdout.write(data.results);
+        if (data.results.length > 0) {
+          var transcript = null;
+          if (typeof(data.results) == 'string') {
+            transcript = data.results.trim();
+            transcript = transcript.toLowerCase();
+            var commandCode = lang.commandToCode("en-US", transcript);
+            if (commandCode == -1) {
+              console.log(`Transcript ${transcript} not recognized`);
+            } else {
+              console.log(`Transcript ${transcript} has code => ${commandCode}`);
+              child.send(transcript);
 
+            }
           }
+
         }
+      });
 
-      }
-    });
+    // Start recording and send the microphone input to the Speech API
 
-  // Start recording and send the microphone input to the Speech API
-
-  record.start({
-    sampleRate: sampleRate,
-    threshold: 0
-  }).pipe(recognizeStream);
-
+    record.start({
+      sampleRate: sampleRate,
+      threshold: 0
+    }).pipe(recognizeStream);
+  }
+  listen();
   var cp = require('child_process');
   var child = cp.fork('./mcplayer');
 
@@ -261,8 +261,8 @@ function streamingMicRecognize (encoding, sampleRate) {
     // Receive results from child process
 
     if(m=="playend"){
-      console.log("listening...");
-      
+      console.log("listening ...");
+      listen();
     }
   });
 

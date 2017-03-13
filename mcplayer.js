@@ -20,7 +20,7 @@ var player = new Player();
       player.stop();
       player = new Player(songs[m]);
       player.on('error', function(err) {
-        console.log("hmm...");
+        console.log("...");
         process.send("playend");
       })
       player.on('playend', function(song) {
